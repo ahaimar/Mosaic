@@ -1,0 +1,38 @@
+[
+  {
+    "id": "effect_motivation",
+    "type": "EFFECT",
+    "name": "Motivation",
+    "description": "Boosts a student's effective stats for this match.",
+    "effectType": "MOTIVATION",
+    "magnitude": 1.15,
+    "duration": 1
+  },
+  {
+    "id": "effect_second_chance",
+    "type": "EFFECT",
+    "name": "Second Chance",
+    "description": "Allows a retry on the next failed action.",
+    "effectType": "SECOND_CHANCE",
+    "magnitude": 1,
+    "duration": 0
+  },
+  {
+    "id": "effect_extra_time",
+    "type": "EFFECT",
+    "name": "Extra Time",
+    "description": "Adds extra seconds to the current challenge.",
+    "effectType": "EXTRA_TIME",
+    "magnitude": 10,
+    "duration": 0
+  },
+  {
+    "id": "effect_distraction",
+    "type": "EFFECT",
+    "name": "Distraction",
+    "description": "Reduces the opponent's focus this turn.",
+    "effectType": "DISTRACTION",
+    "magnitude": 0.85,
+    "duration": 1
+  }
+]

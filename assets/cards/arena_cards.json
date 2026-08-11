@@ -1,0 +1,37 @@
+[
+  {
+    "id": "arena_rock_paper_scissors",
+    "type": "ARENA",
+    "name": "Rock, Paper, Scissors",
+    "description": "A quick reflex-and-read duel.",
+    "arenaType": "ROCK_PAPER_SCISSORS"
+  },
+  {
+    "id": "arena_tic_tac_toe",
+    "type": "ARENA",
+    "name": "Tic-Tac-Toe",
+    "description": "A short spatial logic challenge.",
+    "arenaType": "TIC_TAC_TOE"
+  },
+  {
+    "id": "arena_memory",
+    "type": "ARENA",
+    "name": "Memory",
+    "description": "Test recall under pressure.",
+    "arenaType": "MEMORY"
+  },
+  {
+    "id": "arena_logic_puzzle",
+    "type": "ARENA",
+    "name": "Logic Puzzle",
+    "description": "A deduction challenge favoring analysis.",
+    "arenaType": "LOGIC_PUZZLE"
+  },
+  {
+    "id": "arena_debate",
+    "type": "ARENA",
+    "name": "Debate",
+    "description": "A battle of persuasion and confidence.",
+    "arenaType": "DEBATE"
+  }
+]
