@@ -3,15 +3,13 @@ package com.packs.mosaic;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.packs.mosaic.audio.AudioManager;
 import com.packs.mosaic.components.SkinFactory;
-import com.packs.mosaic.screens.GridPrototypeScreen;
+import com.packs.mosaic.i18n.LocalizationManager;
+import com.packs.mosaic.persist.GameSettings;
+import com.packs.mosaic.screens.MainMenuScreen;
 
-/**
- * Application entry point. Builds the shared SpriteBatch and Skin
- * once (both are expensive and stateless enough to reuse across every
- * screen), then hands off to the first Screen. Individual screens
- * receive the skin via BaseScreen's constructor.
- */
+/** now task - 13 -> 14 is next */
 public class Main extends Game {
 
     private SpriteBatch batch;
@@ -22,9 +20,14 @@ public class Main extends Game {
         batch = new SpriteBatch();
         skin = SkinFactory.createSkin();
 
-        // Phase 1 prototype target: grid + camera + building placement.
-        // Swap this for MainMenuScreen once the prototype is validated.
-        setScreen(new GridPrototypeScreen(skin));
+        // Apply persisted preferences: language and volumes (audio generates
+        // its placeholder WAVs lazily on first play, so this is safe anywhere).
+        LocalizationManager.init(GameSettings.getLocale());
+        AudioManager.getInstance().setSfxVolume(GameSettings.getSfxVolume());
+        AudioManager.getInstance().init();
+
+        // Start at the main menu: New Game enters the grid, Continue loads a save.
+        setScreen(new MainMenuScreen(this));
     }
 
     @Override
@@ -42,6 +45,7 @@ public class Main extends Game {
     @Override
     public void dispose() {
         if (getScreen() != null) getScreen().dispose();
+        AudioManager.getInstance().dispose();
         batch.dispose();
         skin.dispose();
     }

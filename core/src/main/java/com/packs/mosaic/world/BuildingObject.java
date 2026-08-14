@@ -15,10 +15,15 @@ public class BuildingObject implements VillageGrid.GridOccupant {
     private int rotationDegrees; // 0, 90, 180, 270
 
     public BuildingObject(BuildingType type, int originCol, int originRow) {
+        this(type, originCol, originRow, 0);
+    }
+
+    /** Full constructor with rotation, for save/load and undo/redo restoration. */
+    public BuildingObject(BuildingType type, int originCol, int originRow, int rotationDegrees) {
         this.type = type;
         this.originCol = originCol;
         this.originRow = originRow;
-        this.rotationDegrees = 0;
+        this.rotationDegrees = (rotationDegrees / 90 % 4) * 90; // snap to 0/90/180/270
     }
 
     public BuildingType getType() { return type; }

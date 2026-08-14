@@ -42,6 +42,7 @@ public class PlayerProgress {
     public Array<BuildingType> getUnlockedTypes() {
         Array<BuildingType> unlocked = new Array<>();
         for (BuildingType type : BuildingCatalog.getAll()) {
+            if (type.isDiscoveryReward()) continue;
             if (isUnlocked(type)) unlocked.add(type);
         }
         return unlocked;
@@ -51,6 +52,7 @@ public class PlayerProgress {
     public int starsUntilNextUnlock() {
         int nextThreshold = -1;
         for (BuildingType type : BuildingCatalog.getAll()) {
+            if (type.isDiscoveryReward()) continue;
             int threshold = type.getStarsToUnlock();
             if (threshold > totalStars && (nextThreshold == -1 || threshold < nextThreshold)) {
                 nextThreshold = threshold;

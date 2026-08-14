@@ -45,7 +45,7 @@ public class LibGdxNotification extends Table {
         Label messageLabel = new Label(message, skin, labelStyle);
         messageLabel.setWrap(true);
 
-        LibGdxButton closeBtn = new LibGdxButton("✕", "ghost", LibGdxButton.Size.SM, skin,
+        LibGdxButton closeBtn = new LibGdxButton("X", "ghost", LibGdxButton.Size.SM, skin,
             this::dismiss);
 
         add(messageLabel).expandX().fillX().left();

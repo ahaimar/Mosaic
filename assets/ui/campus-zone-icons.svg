@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 970 330" role="img" aria-labelledby="title desc" style="">
+    <title id="title" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:anthropic-sans, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">MOSAIC campus zone icons — improved</title>
+    <desc id="desc" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:anthropic-sans, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Three refined flat vector game interface icons for Courtyard, Shop, and School zones with enhanced visual polish and detail.</desc>
+
+    <defs>
+        <filter id="subtle-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+        </filter>
+    </defs>
+
+    <rect width="960" height="320" fill="#f8fafb" style="fill:rgb(248, 250, 251);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:anthropic-sans, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+    <g font-family="Fredoka, Arial, sans-serif" text-anchor="middle" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+
+        <g transform="translate(40 30)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+            <rect width="280" height="260" rx="20" fill="#ffffff" stroke="#d1dee2" stroke-width="2" filter="url(#subtle-shadow)" style="fill:rgb(255, 255, 255);stroke:rgb(209, 222, 226);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <ellipse cx="140" cy="155" rx="65" ry="12" fill="#e8f1ef" opacity="0.6" style="fill:rgb(232, 241, 239);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.6;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <circle cx="140" cy="70" r="32" fill="#4fb880" style="fill:rgb(79, 184, 128);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="112" cy="85" r="28" fill="#45a972" style="fill:rgb(69, 169, 114);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="168" cy="85" r="28" fill="#45a972" style="fill:rgb(69, 169, 114);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="100" cy="95" r="20" fill="#3d9463" style="fill:rgb(61, 148, 99);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="180" cy="95" r="20" fill="#3d9463" style="fill:rgb(61, 148, 99);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="135" y="100" width="10" height="60" rx="3" fill="#8b6f47" style="fill:rgb(139, 111, 71);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <rect x="136" y="102" width="3" height="55" fill="#a0835a" opacity="0.6" style="fill:rgb(160, 131, 90);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.6;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="110" y="135" width="60" height="8" rx="2" fill="#a57c4a" style="fill:rgb(165, 124, 74);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <rect x="108" y="143" width="8" height="22" rx="2" fill="#8b6f47" style="fill:rgb(139, 111, 71);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <rect x="164" y="143" width="8" height="22" rx="2" fill="#8b6f47" style="fill:rgb(139, 111, 71);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <ellipse cx="140" cy="160" rx="70" ry="8" fill="#e8ede8" opacity="0.5" style="fill:rgb(232, 237, 232);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.5;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <text x="140" y="225" font-size="24" font-weight="700" fill="#203c46" style="fill:rgb(32, 60, 70);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:auto">Courtyard</text>
+            <text x="140" y="252" font-size="13" font-weight="500" fill="#719398" style="fill:rgb(113, 147, 152);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:13px;font-weight:500;text-anchor:middle;dominant-baseline:auto">Rest &amp; social</text>
+        </g>
+
+
+        <g transform="translate(340 30)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+            <rect width="280" height="260" rx="20" fill="#ffffff" stroke="#d1dee2" stroke-width="2" filter="url(#subtle-shadow)" style="fill:rgb(255, 255, 255);stroke:rgb(209, 222, 226);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="88" y="100" width="104" height="75" rx="3" fill="#ffa94d" stroke="#cc8833" stroke-width="2" style="fill:rgb(255, 169, 77);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="98" y="110" width="18" height="20" rx="2" fill="#fff8f0" stroke="#cc8833" stroke-width="1.5" style="fill:rgb(255, 248, 240);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <rect x="122" y="110" width="18" height="20" rx="2" fill="#fff8f0" stroke="#cc8833" stroke-width="1.5" style="fill:rgb(255, 248, 240);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <rect x="146" y="110" width="18" height="20" rx="2" fill="#fff8f0" stroke="#cc8833" stroke-width="1.5" style="fill:rgb(255, 248, 240);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="120" y="135" width="20" height="35" rx="2" fill="#d67c3a" stroke="#cc8833" stroke-width="1.5" style="fill:rgb(214, 124, 58);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="138" cy="152" r="2" fill="#8b6f47" style="fill:rgb(139, 111, 71);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <path d="M88 100 L140 70 L192 100" fill="#ff8a3d" stroke="#cc8833" stroke-width="2" stroke-linejoin="round" style="fill:rgb(255, 138, 61);stroke:rgb(204, 136, 51);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <path d="M92 98 L140 73 L188 98" fill="none" stroke="#ffc266" stroke-width="1" opacity="0.7" style="fill:none;stroke:rgb(255, 194, 102);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.7;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <path d="M110 155 L120 175 L160 175 L170 155" fill="#ff6d5f" stroke="#b8472c" stroke-width="2" stroke-linejoin="round" style="fill:rgb(255, 109, 95);stroke:rgb(184, 71, 44);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <path d="M125 155 L125 175M140 155 L140 175M155 155 L155 175" stroke="#ffc266" stroke-width="1.5" opacity="0.6" style="fill:rgb(0, 0, 0);stroke:rgb(255, 194, 102);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.6;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <text x="140" y="225" font-size="24" font-weight="700" fill="#203c46" style="fill:rgb(32, 60, 70);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:auto">Shop</text>
+            <text x="140" y="252" font-size="13" font-weight="500" fill="#719398" style="fill:rgb(113, 147, 152);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:13px;font-weight:500;text-anchor:middle;dominant-baseline:auto">Trade &amp; supplies</text>
+        </g>
+
+
+        <g transform="translate(640 30)" style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+            <rect width="280" height="260" rx="20" fill="#ffffff" stroke="#d1dee2" stroke-width="2" filter="url(#subtle-shadow)" style="fill:rgb(255, 255, 255);stroke:rgb(209, 222, 226);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="95" y="105" width="90" height="70" rx="3" fill="#7986d9" stroke="#5a6bb5" stroke-width="2" style="fill:rgb(121, 134, 217);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <path d="M95 105 L140 60 L185 105" fill="#6b77c9" stroke="#5a6bb5" stroke-width="2" stroke-linejoin="round" style="fill:rgb(107, 119, 201);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:2px;stroke-linecap:butt;stroke-linejoin:round;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="138" y="45" width="4" height="20" fill="#5a6bb5" style="fill:rgb(90, 107, 181);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <rect x="142" y="48" width="24" height="14" rx="2" fill="#ffc947" stroke="#daa520" stroke-width="1.5" style="fill:rgb(255, 201, 71);stroke:rgb(218, 165, 32);color:rgb(11, 11, 11);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="145" cy="55" r="2" fill="#daa520" style="fill:rgb(218, 165, 32);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <g style="fill:rgb(0, 0, 0);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto">
+
+                <rect x="106" y="118" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="113" y1="118" x2="113" y2="132" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="106" y1="125" x2="120" y2="125" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+                <rect x="127" y="118" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="134" y1="118" x2="134" y2="132" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="127" y1="125" x2="141" y2="125" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+                <rect x="148" y="118" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="155" y1="118" x2="155" y2="132" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="148" y1="125" x2="162" y2="125" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+                <rect x="106" y="143" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="113" y1="143" x2="113" y2="157" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="106" y1="150" x2="120" y2="150" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+                <rect x="127" y="143" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="134" y1="143" x2="134" y2="157" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="127" y1="150" x2="141" y2="150" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+                <rect x="148" y="143" width="14" height="14" rx="1" fill="#e5e8ff" stroke="#5a6bb5" stroke-width="1" style="fill:rgb(229, 232, 255);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="155" y1="143" x2="155" y2="157" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+                <line x1="148" y1="150" x2="162" y2="150" stroke="#5a6bb5" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(90, 107, 181);color:rgb(11, 11, 11);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            </g>
+
+
+            <rect x="131" y="160" width="18" height="15" rx="1" fill="#5a6bb5" stroke="#4a5aa0" stroke-width="1" style="fill:rgb(90, 107, 181);stroke:rgb(74, 90, 160);color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+            <circle cx="146" cy="167" r="1.5" fill="#ffc947" style="fill:rgb(255, 201, 71);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <ellipse cx="140" cy="180" rx="65" ry="6" fill="#7986d9" opacity="0.15" style="fill:rgb(121, 134, 217);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.15;font-family:Fredoka, Arial, sans-serif;font-size:16px;font-weight:400;text-anchor:middle;dominant-baseline:auto"/>
+
+
+            <text x="140" y="225" font-size="24" font-weight="700" fill="#203c46" style="fill:rgb(32, 60, 70);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:auto">Academy</text>
+            <text x="140" y="252" font-size="13" font-weight="500" fill="#719398" style="fill:rgb(113, 147, 152);stroke:none;color:rgb(11, 11, 11);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Fredoka, Arial, sans-serif;font-size:13px;font-weight:500;text-anchor:middle;dominant-baseline:auto">Learn &amp; grow</text>
+        </g>
+    </g>
+</svg>

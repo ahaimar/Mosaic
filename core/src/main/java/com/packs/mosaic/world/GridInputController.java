@@ -1,9 +1,11 @@
 package com.packs.mosaic.world;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -22,7 +24,11 @@ public class GridInputController extends InputAdapter {
     private final float maxZoom;
 
     private final Vector3 lastTouch = new Vector3();
+    private final Vector2 touchStart = new Vector2();
     private boolean dragging = false;
+    private boolean movedBeyondThreshold = false;
+
+    private static final float DRAG_THRESHOLD = 8f; // screen px — beyond this a drag counts as pan, not tap
 
     private final BuildingPlacementController placementController;
 
@@ -42,6 +48,16 @@ public class GridInputController extends InputAdapter {
         clampCameraToGrid();
     }
 
+    /**
+     * Applies a zoom level from UI controls (zoom in/out buttons), clamped to the
+     * configured range, then immediately re-clamps the camera position so the grid
+     * stays in view — the buttons must not wait for the next frame's update().
+     */
+    public void setZoom(float zoom) {
+        camera.zoom = MathUtils.clamp(zoom, minZoom, maxZoom);
+        clampCameraToGrid();
+    }
+
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
         placementController.updateHover(screenXToCol(screenX, screenY), screenYToRow(screenX, screenY));
@@ -53,7 +69,9 @@ public class GridInputController extends InputAdapter {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) {
             lastTouch.set(screenX, screenY, 0);
+            touchStart.set(screenX, screenY);
             dragging = true;
+            movedBeyondThreshold = false;
         }
         return true;
     }
@@ -62,6 +80,11 @@ public class GridInputController extends InputAdapter {
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         placementController.updateHover(screenXToCol(screenX, screenY), screenYToRow(screenX, screenY));
         if (!dragging) return false;
+
+        if (!movedBeyondThreshold
+            && touchStart.dst(screenX, screenY) > DRAG_THRESHOLD) {
+            movedBeyondThreshold = true;
+        }
 
         Vector3 current = new Vector3(screenX, screenY, 0);
         Vector3 worldCurrent = viewport.unproject(current.cpy());
@@ -81,9 +104,13 @@ public class GridInputController extends InputAdapter {
         int row = screenYToRow(screenX, screenY);
         if (button == Input.Buttons.LEFT) {
             dragging = false;
-            placementController.tryPlace(col, row);
+            if (!movedBeyondThreshold) {
+                placementController.tryPlace(col, row);
+            }
         } else if (button == Input.Buttons.RIGHT) {
-            placementController.tryDelete(col, row);
+            if (!movedBeyondThreshold) {
+                placementController.tryDelete(col, row);
+            }
         }
         return true;
     }
@@ -92,6 +119,16 @@ public class GridInputController extends InputAdapter {
     public boolean keyDown(int keycode) {
         if (keycode == Input.Keys.R) {
             placementController.rotateSelection();
+            return true;
+        }
+        boolean control = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)
+            || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT);
+        if (control && keycode == Input.Keys.Z) {
+            placementController.undo();
+            return true;
+        }
+        if (control && keycode == Input.Keys.Y) {
+            placementController.redo();
             return true;
         }
         return false;
