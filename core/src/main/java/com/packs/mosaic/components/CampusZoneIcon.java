@@ -10,10 +10,18 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 final class CampusZoneIcon extends Actor {
     private static final ShapeRenderer RENDERER = new ShapeRenderer();
     private final String typeId;
+    private final boolean solidBackground;
     private final Vector2 stagePosition = new Vector2();
 
     CampusZoneIcon(String typeId) {
+        this(typeId, true);
+    }
+
+    /** @param solidBackground when false the pale base disc is skipped (the
+     *  enclosing circular dock button provides its own background). */
+    CampusZoneIcon(String typeId, boolean solidBackground) {
         this.typeId = typeId;
+        this.solidBackground = solidBackground;
     }
 
     @Override
@@ -28,8 +36,10 @@ final class CampusZoneIcon extends Actor {
         float w = getWidth();
         float h = getHeight();
 
-        RENDERER.setColor(new Color(0.86f, 0.95f, 0.92f, 1f));
-        RENDERER.circle(x + w / 2f, y + h / 2f, Math.min(w, h) * 0.46f);
+        if (solidBackground) {
+            RENDERER.setColor(new Color(0.86f, 0.95f, 0.92f, 1f));
+            RENDERER.circle(x + w / 2f, y + h / 2f, Math.min(w, h) * 0.46f);
+        }
 
         if (typeId.equals("school")) {
             drawSchool(x, y, w, h);

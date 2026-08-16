@@ -9,7 +9,6 @@ import com.packs.mosaic.i18n.LocalizationManager;
 import com.packs.mosaic.persist.GameSettings;
 import com.packs.mosaic.screens.MainMenuScreen;
 
-/** now task - 13 -> 14 is next */
 public class Main extends Game {
 
     private SpriteBatch batch;

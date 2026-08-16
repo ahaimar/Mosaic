@@ -1204,6 +1204,168 @@ class EconomySimulationTest {
         assertTrue(sim.getInventory(Resource.IRON) > 0f, "arrived iron also sits in the settlement");
     }
 
+    // ── Task 14: energy system ──────────────────────────────────────────
+
+    @Test
+    void energyProducersAreRegisteredInTheDataTable() {
+        for (String id : new String[]{"generator", "power_plant", "solar_plant", "advanced_power_plant"}) {
+            BuildingEconomy profile = EconomyData.get(id);
+            assertNotNull(profile, id + " has a profile");
+            assertTrue(profile.getEnergyProduced() > 0f, id + " generates power");
+            assertTrue(profile.isEnergyProducer(), id + " is an energy producer");
+            assertFalse(profile.isProducer(), id + " feeds the grid, not the goods market");
+            assertTrue(profile.hasConstruction(), id + " is built over time");
+            assertEquals(0f, profile.getEnergyConsumed(), EPS, id + " only produces");
+        }
+        assertEquals(3f, EconomyData.get("generator").getEnergyProduced(), EPS);
+        assertEquals(8f, EconomyData.get("power_plant").getEnergyProduced(), EPS);
+        assertEquals(5f, EconomyData.get("solar_plant").getEnergyProduced(), EPS);
+        assertEquals(15f, EconomyData.get("advanced_power_plant").getEnergyProduced(), EPS);
+        assertEquals(1f, EconomyData.get("workshop").getEnergyConsumed(), EPS, "a factory draws power");
+        assertEquals(2f, EconomyData.get("smelter").getEnergyConsumed(), EPS);
+        assertEquals(1f, EconomyData.get("shop").getEnergyConsumed(), EPS, "a shop draws power");
+        assertEquals(1f, EconomyData.get("warehouse").getEnergyConsumed(), EPS, "a warehouse draws power");
+        assertEquals(2f, EconomyData.get("truck_depot").getEnergyConsumed(), EPS, "infrastructure draws power");
+        assertEquals(2f, EconomyData.get("university").getEnergyConsumed(), EPS, "a research facility draws power");
+        assertEquals(0f, EconomyData.get("tree").getEnergyConsumed(), EPS, "nature needs no power");
+        assertEquals(0f, EconomyData.get("lumber_hut").getEnergyConsumed(), EPS, "manual producers need no power");
+    }
+
+    @Test
+    void energyBalanceFollowsTheSpecFormula() {
+        // Energy production − energy consumption = energy balance, and a
+        // surplus keeps every building at full efficiency. A settlement
+        // starts with a small base grid (5 units) before any power plant.
+        EconomySimulation sim = new EconomySimulation(state(8f, 100f,
+            Resource.WOOD, 40f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        sim.addBuilding("generator", true);
+        sim.addBuilding("workshop", true);
+        sim.tick();
+        assertEquals(8f, sim.getEnergyProduction(), EPS, "base grid 5 + generator 3");
+        assertEquals(1f, sim.getEnergyConsumption(), EPS, "the workshop draws one unit");
+        assertEquals(7f, sim.getEnergyBalance(), EPS, "production − consumption = +7");
+        assertEquals(1f, sim.getEnergyEfficiency(), EPS, "a surplus keeps everyone at full efficiency");
+        assertEquals(3f, sim.getBuildingEnergyProduced("generator"), EPS);
+        assertEquals(1f, sim.getBuildingEnergyConsumed("workshop"), EPS);
+    }
+
+    @Test
+    void energyShortageReducesFactoryEfficiency() {
+        // Ten units drawn against the base grid's five: the settlement runs
+        // at 50% efficiency and the workshop has not finished a batch in one
+        // tick. Building a power plant lifts the grid back to full power.
+        EconomySimulation sim = new EconomySimulation(state(16f, 100f,
+            Resource.WOOD, 40f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        sim.addBuilding("workshop", true);
+        sim.addBuilding("smelter", true);
+        sim.addBuilding("smelter", true);
+        sim.addBuilding("machine_factory", true);
+        sim.addBuilding("carpentry", true);
+        sim.tick();
+        assertEquals(0.5f, sim.getEnergyEfficiency(), EPS, "the grid meets 50% of its demand");
+        assertEquals(-5f, sim.getEnergyBalance(), EPS, "the balance is negative when short");
+        assertEquals(0f, sim.getProduced(Resource.TOOLS), EPS,
+            "a workshop at 50% has not finished a batch in one tick");
+        sim.addBuilding("power_plant", true);
+        sim.tick();
+        assertEquals(1f, sim.getEnergyEfficiency(), EPS, "a power plant lifts the grid back to full");
+        assertEquals(1f, sim.getProduced(Resource.TOOLS), EPS,
+            "with power the workshop is back at full speed");
+    }
+
+    @Test
+    void energyDeficitScalesProductionProportionally() {
+        // Two identical towns, one short of power: the workshop's throughput
+        // drops exactly to the grid's efficiency (50%) instead of stopping.
+        EconomySimulation full = new EconomySimulation(state(16f, 100f,
+            Resource.WOOD, 60f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        full.addBuilding("power_plant", true);
+        full.addBuilding("workshop", true);
+        full.addBuilding("smelter", true);
+        full.addBuilding("smelter", true);
+        full.addBuilding("machine_factory", true);
+        full.addBuilding("carpentry", true);
+        EconomySimulation shortGrid = new EconomySimulation(state(16f, 100f,
+            Resource.WOOD, 60f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        shortGrid.addBuilding("workshop", true);
+        shortGrid.addBuilding("smelter", true);
+        shortGrid.addBuilding("smelter", true);
+        shortGrid.addBuilding("machine_factory", true);
+        shortGrid.addBuilding("carpentry", true);
+        float fullTools = 0f, shortTools = 0f;
+        for (int i = 0; i < 10; i++) {
+            full.tick();
+            shortGrid.tick();
+            fullTools += full.getProduced(Resource.TOOLS);
+            shortTools += shortGrid.getProduced(Resource.TOOLS);
+        }
+        assertEquals(1f, full.getEnergyEfficiency(), EPS);
+        assertEquals(0.5f, shortGrid.getEnergyEfficiency(), EPS, "5 of 10 energy units met");
+        assertTrue(shortTools < fullTools, "the short grid produced fewer tools");
+        assertEquals(10f, fullTools, EPS, "the powered workshop makes one tool per tick");
+        assertEquals(5f, shortTools, EPS, "the starved workshop makes one tool every two ticks");
+    }
+
+    @Test
+    void buildingsThatNeedNoEnergyAreNotAffectedByShortage() {
+        // The tree needs no grid power, so its yield is identical whether the
+        // factories next to it are starved of power or not.
+        EconomySimulation shortGrid = new EconomySimulation(state(16f, 100f,
+            Resource.WOOD, 40f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        shortGrid.addBuilding("tree", true);
+        shortGrid.addBuilding("workshop", true);
+        shortGrid.addBuilding("smelter", true);
+        shortGrid.addBuilding("smelter", true);
+        shortGrid.addBuilding("machine_factory", true);
+        shortGrid.addBuilding("carpentry", true);
+        EconomySimulation powered = new EconomySimulation(state(16f, 100f,
+            Resource.WOOD, 40f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        powered.addBuilding("tree", true);
+        powered.addBuilding("workshop", true);
+        powered.addBuilding("smelter", true);
+        powered.addBuilding("smelter", true);
+        powered.addBuilding("machine_factory", true);
+        powered.addBuilding("carpentry", true);
+        powered.addBuilding("power_plant", true);
+        float shortSteel = 0f, poweredSteel = 0f;
+        float shortWood = 0f, poweredWood = 0f;
+        for (int i = 0; i < 6; i++) {
+            shortGrid.tick();
+            powered.tick();
+            shortSteel += shortGrid.getProduced(Resource.STEEL);
+            poweredSteel += powered.getProduced(Resource.STEEL);
+            shortWood += shortGrid.getProduced(Resource.WOOD);
+            poweredWood += powered.getProduced(Resource.WOOD);
+        }
+        assertEquals(0.5f, shortGrid.getEnergyEfficiency(), EPS, "the grid is short");
+        assertEquals(1f, powered.getEnergyEfficiency(), EPS, "a power plant covers the demand");
+        assertEquals(6f, poweredSteel, EPS, "the powered smelters run at full speed");
+        assertEquals(3f, shortSteel, EPS, "the short grid's smelters run at half speed");
+        assertEquals(poweredWood, shortWood, EPS, "the tree needs no energy and is never throttled");
+        assertEquals(3f, shortWood, EPS, "the tree still produced its full yield");
+    }
+
+    @Test
+    void energyProducersAreOperatingBuildings() {
+        EconomySimulation sim = new EconomySimulation(state(8f, 100f,
+            Resource.WOOD, 40f, Resource.STONE, 30f, Resource.IRON, 30f,
+            Resource.COAL, 30f, Resource.FOOD, 40f));
+        sim.addBuilding("generator", true);
+        sim.tick();
+        assertEquals(8f, sim.getEnergyProduction(), EPS, "the generator adds to the base grid");
+        assertEquals(1f, sim.getBuildingEmployedWorkers("generator"), EPS,
+            "the generator hires its worker");
+        assertEquals(0.2f, sim.getBuildingMaintenanceCost("generator"), EPS,
+            "the generator pays its upkeep");
+        assertTrue(sim.getOperatingCosts() > 0f, "power is a real ongoing cost, never free");
+    }
+
     private static EconomyState state(float population, float money, Object... resourceAmounts) {
         EconomyState state = new EconomyState();
         state.population = population;

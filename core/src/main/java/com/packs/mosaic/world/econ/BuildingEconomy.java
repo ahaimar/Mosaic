@@ -26,6 +26,11 @@ import java.util.Map;
  * dispatch budget (stagingBonus) so more delivery trips can be started each
  * tick. A building type without a profile is economically neutral: it
  * produces, consumes and costs nothing.
+ *
+ * Task 14 (energy system) adds the grid fields: a power producer generates
+ * energy for the settlement's network (energyProduced per tick per instance),
+ * and a consumer draws from it (energyConsumed per tick per instance). When
+ * the grid is short the producing consumers run at reduced efficiency.
  */
 public final class BuildingEconomy {
 
@@ -55,6 +60,10 @@ public final class BuildingEconomy {
     private final float truckSpeedBonus;
     private final float roadBonus;
     private final float stagingBonus;
+
+    // ── Task 14 energy network fields ────────────────────────────────────
+    private final float energyProduced;
+    private final float energyConsumed;
 
     public BuildingEconomy(String buildingId, Map<Resource, Float> inputs, Map<Resource, Float> outputs,
                            float workforce, float operatingCost, float housing,
@@ -96,6 +105,23 @@ public final class BuildingEconomy {
                            float inventoryCapacity, float storageCostPerUnit,
                            float trucksProvided, float truckCapacityBonus, float truckSpeedBonus,
                            float roadBonus, float stagingBonus) {
+        this(buildingId, inputs, outputs, workforce, operatingCost, housing,
+            storageBonus, marketBonus, constructionCost, constructionTicks,
+            productionTime, energyRequired, productionCapacity,
+            inventoryCapacity, storageCostPerUnit,
+            trucksProvided, truckCapacityBonus, truckSpeedBonus, roadBonus, stagingBonus,
+            0f, 0f);
+    }
+
+    public BuildingEconomy(String buildingId, Map<Resource, Float> inputs, Map<Resource, Float> outputs,
+                           float workforce, float operatingCost, float housing,
+                           float storageBonus, float marketBonus,
+                           float constructionCost, float constructionTicks,
+                           float productionTime, float energyRequired, float productionCapacity,
+                           float inventoryCapacity, float storageCostPerUnit,
+                           float trucksProvided, float truckCapacityBonus, float truckSpeedBonus,
+                           float roadBonus, float stagingBonus,
+                           float energyProduced, float energyConsumed) {
         this.buildingId = buildingId;
         this.inputs = new EnumMap<>(Resource.class);
         if (inputs != null) this.inputs.putAll(inputs);
@@ -118,6 +144,8 @@ public final class BuildingEconomy {
         this.truckSpeedBonus = Math.max(0f, truckSpeedBonus);
         this.roadBonus = Math.max(0f, roadBonus);
         this.stagingBonus = Math.max(0f, stagingBonus);
+        this.energyProduced = Math.max(0f, energyProduced);
+        this.energyConsumed = Math.max(0f, energyConsumed);
     }
 
     public String getBuildingId() { return buildingId; }
@@ -139,7 +167,7 @@ public final class BuildingEconomy {
     }
 
     public boolean isConsumer() {
-        return !inputs.isEmpty() || energyRequired > 0f;
+        return !inputs.isEmpty() || energyRequired > 0f || energyConsumed > 0f;
     }
 
     /** Workers required to run one instance of this building. */
@@ -218,4 +246,22 @@ public final class BuildingEconomy {
 
     /** Extra delivery trips one active warehouse can stage per tick. */
     public float getStagingBonus() { return stagingBonus; }
+
+    // ── Task 14 energy network ───────────────────────────────────────────
+
+    /** Grid energy one active instance feeds the settlement network per tick. */
+    public float getEnergyProduced() { return energyProduced; }
+
+    /** Grid energy one active instance draws from the network per tick. */
+    public float getEnergyConsumed() { return energyConsumed; }
+
+    /** A building type that feeds the settlement's energy network. */
+    public boolean isEnergyProducer() {
+        return energyProduced > 0f;
+    }
+
+    /** A building type that draws from the settlement's energy network. */
+    public boolean isEnergyConsumer() {
+        return energyConsumed > 0f;
+    }
 }

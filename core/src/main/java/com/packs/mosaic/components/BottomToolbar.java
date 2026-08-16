@@ -2,12 +2,15 @@ package com.packs.mosaic.components;
 
 import java.util.EnumMap;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -22,8 +25,8 @@ import com.packs.mosaic.world.PlayerProgress;
  * Phase 3 bottom toolbar (replaces BuildingSelectionMenu). Always-visible
  * bar with:
  *   left  — action buttons: undo, redo, rotate, delete (toggle)
- *   right — category tabs plus a horizontal row of large icon buttons,
- *           one per unlocked BuildingType.
+ *   right — a category tab strip, vertically separated from a horizontal
+ *           row of compact circular icon buttons, one per unlocked type.
  *
  * Types are gated by PlayerProgress; {@link #refresh()} rebuilds the
  * option buttons after stars change or language switches. Selecting a
@@ -38,8 +41,8 @@ public class BottomToolbar extends Table {
     private final DiscoveryManager discoveryManager;
     private String mapId;
 
-    private final ButtonGroup<LibGdxButton> selectionGroup = new ButtonGroup<>();
-    private final ObjectMap<BuildingType, LibGdxButton> typeButtons = new ObjectMap<>();
+    private final ButtonGroup<Button> selectionGroup = new ButtonGroup<>();
+    private final ObjectMap<BuildingType, Button> typeButtons = new ObjectMap<>();
     private final EnumMap<BuildingType.Category, Table> categoryRows =
         new EnumMap<>(BuildingType.Category.class);
     private Table options;
@@ -75,11 +78,16 @@ public class BottomToolbar extends Table {
         buildActions();
         buildCategories();
 
+        ScrollPane scroll = new ScrollPane(options, skin);
+        scroll.setScrollingDisabled(false, true);
+        scroll.setOverscroll(false, false);
+        scroll.setFadeScrollBars(false);
+
         Table right = new Table(skin);
-        right.add(categoryTabs).growX().padBottom(4f).row();
-        right.add(new ScrollPane(options, skin)).growX().height(78f).row();
+        right.add(categoryTabs).growX().pad(2f, 4f, 8f, 4f).row();
+        right.add(scroll).growX().height(72f).pad(0f, 4f, 0f, 4f).row();
         hintLabel = new Label("", skin, "small");
-        right.add(hintLabel).left().padTop(3f);
+        right.add(hintLabel).left().padTop(3f).padLeft(8f);
 
         Table actions = new Table(skin);
         actions.defaults().size(104f, 40f).pad(2f);
@@ -123,9 +131,11 @@ public class BottomToolbar extends Table {
 
     private void buildCategories() {
         categoryTabs = new Table(skin);
-        categoryTabs.defaults().pad(2f, 4f, 2f, 4f);
+        categoryTabs.setBackground(skin.getDrawable("icon-toggle-bg"));
+        categoryTabs.defaults().pad(3f, 6f, 3f, 6f);
 
         options = new Table(skin);
+        options.top();
         options.defaults().pad(4f);
     }
 
@@ -176,31 +186,41 @@ public class BottomToolbar extends Table {
 
         for (BuildingType.Category category : BuildingType.Category.values()) {
             Table row = new Table(skin);
-            row.defaults().pad(3f);
+            row.left();
+            row.defaults().pad(2f, 5f, 2f, 5f);
 
             boolean hasAny = false;
             for (BuildingType type : unlocked) {
                 if (type.getCategory() != category) continue;
                 if (!type.isAvailableOn(mapId)) continue;
 
-                String variant = category == BuildingType.Category.ENVIRONMENT
-                    ? "secondary" : "primary";
-                LibGdxButton button = new LibGdxButton(
-                    tr("building." + type.getId()), variant, LibGdxButton.Size.SM, skin, () -> {
+                Button circle = new Button(skin, "circle");
+                circle.setProgrammaticChangeEvents(false);
+                circle.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
                         if (placementController.isDeleteMode()) {
                             placementController.setDeleteMode(false);
                             deleteButton.setChecked(false);
                         }
                         placementController.selectType(type);
-                    });
+                    }
+                });
+                circle.add(new CampusZoneIcon(type.getId(), false)).size(36f);
+
+                Label name = new Label(tr("building." + type.getId()), skin, "small");
+                name.setWrap(true);
+                name.setAlignment(Align.center);
+                name.setFontScale(0.6f);
 
                 Table option = new Table(skin);
-                option.add(new CampusZoneIcon(type.getId())).size(36f).row();
-                option.add(button).minWidth(128f).height(44f);
+                option.top();
+                option.add(circle).size(48f).padTop(2f).row();
+                option.add(name).width(76f).minHeight(26f).padTop(3f).padBottom(4f);
                 row.add(option).pad(2f, 4f, 2f, 4f);
 
-                selectionGroup.add(button);
-                typeButtons.put(type, button);
+                selectionGroup.add(circle);
+                typeButtons.put(type, circle);
                 hasAny = true;
             }
 
@@ -242,7 +262,7 @@ public class BottomToolbar extends Table {
     }
 
     private void syncSelection(BuildingType type) {
-        for (ObjectMap.Entry<BuildingType, LibGdxButton> entry : typeButtons) {
+        for (ObjectMap.Entry<BuildingType, Button> entry : typeButtons) {
             entry.value.setChecked(entry.key == type);
         }
     }

@@ -17,6 +17,23 @@ import com.badlogic.gdx.utils.Array;
  * mutable workforce figure that has history; everything else (working
  * population, employed/unemployed, required workers) is recomputed each tick
  * from the population and the building layout.
+ *
+ * <p>Task 15 (technology and productivity) adds the {@code techLevel} — the
+ * settlement's unlocked tier (1 = Manual … 5 = Advanced Technology) — plus the
+ * in-progress research project (coins still owed and ticks still needed). The
+ * bonuses themselves are derived from the tier in the technology catalog, so
+ * only the level and the outstanding research are persisted.
+ *
+ * <p>Task 16 (investment decisions) adds the active investment project (id +
+ * coins still owed) and the set of completed investment ids. The permanent
+ * bonuses an investment grants are recomputed from the completed ids on
+ * restore, so only the ids and the outstanding cost are persisted.
+ *
+ * <p>Task 18 (development levels) adds the settlement's development stage and
+ * the three lifetime metrics that drive it (cumulative production, market
+ * sales and revenue). These must be persisted because the development
+ * conditions compare against them — a reloaded settlement keeps its progress
+ * toward the next stage.
  */
 public class EconomyState {
 
@@ -43,6 +60,26 @@ public class EconomyState {
     public float population;
     /** Average wage one worker earns per tick (Task 9). */
     public float averageWage;
+    /** Unlocked technology tier, 1 = Manual … 5 = Advanced (Task 15). */
+    public int techLevel;
+    /** Coins still owed on the in-progress research project (Task 15). */
+    public float researchRemainingCost;
+    /** Ticks still needed to complete the research project (Task 15). */
+    public float researchRemainingTicks;
+    /** Id of the active investment project, or null (Task 16). */
+    public String activeInvestmentId;
+    /** Coins still owed on the active investment project (Task 16). */
+    public float investmentRemainingCost;
+    /** Ids of every completed investment (Task 16). */
+    public Array<String> completedInvestments = new Array<>();
+    /** Development stage, 1 = Small Settlement … 6 = Major Economic Center (Task 18). */
+    public int developmentLevel;
+    /** Cumulative units produced since the save (Task 18 condition). */
+    public float lifetimeProduced;
+    /** Cumulative units sold to the market since the save (Task 18 condition). */
+    public float lifetimeSold;
+    /** Cumulative coin revenue since the save (Task 18 condition). */
+    public float lifetimeRevenue;
     public Array<StockState> inventory = new Array<>();
     public Array<ConstructionState> construction = new Array<>();
 

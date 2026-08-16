@@ -92,14 +92,51 @@ import java.util.TreeMap;
  *  ship-out, so adding a route is an explicit choice between speed and real
  *  transport.
  *
+ *  <p>Task 14 — Energy system: the settlement runs an energy network. Power
+ *  plants (generator, power plant, solar plant, advanced power plant)
+ *  generate energy; factories, warehouses, shops, infrastructure and research
+ *  facilities draw it. Each tick the grid computes the spec's balance
+ *  "energy production − energy consumption". When the grid is short,
+ *  production efficiency scales down to the fraction of demand that is met —
+ *  factories slow rather than stop, and buildings that need no energy are
+ *  never affected.
+ *
+ *  <p>Task 15 — Technology and productivity: the settlement progresses
+ *  through the five tiers Manual → Semi-Automated → Automated → Robotic →
+ *  Advanced Technology by funding research projects (coins over time, like
+ *  construction). Each unlocked tier's cumulative bonuses scale production
+ *  speed, worker productivity, resource efficiency (fewer inputs per batch),
+ *  energy efficiency (less grid draw), storage efficiency (more capacity),
+ *  product quality (higher sale prices) and transportation efficiency (more
+ *  goods per delivery trip). Research is capital investment: it is paid from
+ *  the treasury each tick but is not an operating cost.
+ *
+ *  <p>Task 16 — Investment decisions: the settlement can also fund one
+ *  investment project at a time (capacity expansion, storage expansion,
+ *  research endowment, worker education, export agreement). Each is presented
+ *  with its cost, expected benefit, payback period and risk, and once fully
+ *  paid it grants a permanent long-term effect: +output per batch, +shared
+ *  storage, −research cost, +working population share or +sale revenue.
+ *  Investments compete with construction and research for the same treasury,
+ *  each can be taken at most once, and a risky deal's expected benefit is
+ *  discounted — so the player has to plan rather than simply buy everything.
+ *
+ *  <p>Task 18 — Development levels: the settlement advances through six
+ *  stages (Small Settlement → Village → Town → Industrial Town → City →
+ *  Major Economic Center) driven by eight measurable conditions — population,
+ *  cumulative production, employment rate, active infrastructure, cumulative
+ *  revenue, technology tier, housing capacity and cumulative market activity.
+ *  Every stage's thresholds come from the development catalog and the level
+ *  rises automatically when all of them are met, never from money alone.
+ *
  * <p>Flow of a single tick:
  *
  * <pre>
- *   Construction → Workforce (hire + wages) → Production (reserve + batches)
+ *   Construction → Workforce (hire + wages) → Energy (grid balance)
  *                  ↓
- *     Routes (dispatch + arrivals) → Ship-out → Inventory
+ *            Production (reserve + batches) → Routes (dispatch + arrivals)
  *                  ↓
- *          Consumption → Market → Sales → Revenue
+ *       Ship-out → Inventory → Consumption → Market → Sales → Revenue
  *                  ↓
  *   Cost ledger (wages / maintenance / transport / hauling / energy / materials)
  *                  ↓
@@ -129,6 +166,24 @@ public final class EconomySimulation {
     private static final float PRICE_FLOOR = 0.3f;
     private static final float PRICE_CEILING = 2.5f;
     private static final float MAX_MARKET_MULTIPLIER = 3f;
+
+    // ── Task 15 technology & productivity constants ──────────────────────
+    /**
+     * Coins invested into an in-progress research project per tick. Research
+     * is funded like construction — small payments over time — so unlocking a
+     * tier requires both the treasury to stay solvent and the research to
+     * finish ticking down.
+     */
+    private static final float RESEARCH_SPEED = 4f;
+
+    // ── Task 16 investment constants ─────────────────────────────────────
+    /**
+     * Coins invested into an active investment project per tick. Like
+     * construction and research, an investment is paid in small amounts from
+     * the treasury over time, so it never completes while the treasury is
+     * empty — the player must keep the settlement profitable to fund it.
+     */
+    private static final float INVESTMENT_SPEED = 6f;
 
     // ── Task 11 supply & demand constants ────────────────────────────────
     /**
@@ -163,6 +218,15 @@ public final class EconomySimulation {
     private static final float ROUTE_DISTANCE = 6f;
     /** Delivery trips any route can start per tick before warehouses stage. */
     private static final int DISPATCH_BASE = 1;
+
+    // ── Task 14 energy network constants ────────────────────────────────
+    /**
+     * The settlement's base grid power before any power plant is built (a
+     * small backup generator). Like the base truck fleet, it keeps a small
+     * settlement self-sufficient; once consumption outgrows it, power plants
+     * are the only way to keep every factory at full speed.
+     */
+    private static final float BASE_ENERGY = 5f;
 
     // ── Task 9 workforce / employment constants ──────────────────────────
     /** Fraction of the population that is of working age. */
@@ -233,6 +297,61 @@ public final class EconomySimulation {
     private final List<DeliveryRoute> routes = new ArrayList<>();
     /** Task 13: route trip fees paid this tick (part of the operating costs). */
     private float haulingCosts;
+
+    /** Task 14: grid energy generated by the active power plants this tick. */
+    private float energyProduction;
+    /** Task 14: grid energy drawn by the active consumers this tick. */
+    private float energyConsumption;
+    /** Task 14: production − consumption. Positive is a surplus. */
+    private float energyBalance;
+    /**
+     * Task 14: how much of the grid's demand is met, 0..1. When the grid is
+     * short, every consuming building runs at this fraction of its capacity.
+     */
+    private float energyEfficiency = 1f;
+
+    // ── Task 15 technology & productivity state ──────────────────────────
+    /**
+     * The settlement's unlocked technology tier (1 = Manual … 5 = Advanced
+     * Technology). Bonuses are cumulative and read from the catalog.
+     */
+    private int techLevel = 1;
+    /** Coins still owed on the in-progress research project (0 = none). */
+    private float researchRemainingCost;
+    /** Ticks still needed to finish the research project (0 = none). */
+    private float researchRemainingTicks;
+    /** Coins invested into research this tick (capital, not an operating cost). */
+    private float researchInvestedThisTick;
+
+    // ── Task 16 investment & planning state ──────────────────────────────
+    /** The active investment's catalog id (null when none is being funded). */
+    private String activeInvestmentId;
+    /** Coins still owed on the active investment (0 = paid off). */
+    private float investmentRemainingCost;
+    /** Coins invested into the active investment this tick (capital). */
+    private float investmentInvestedThisTick;
+    /** Ids of every completed investment; each can be taken at most once. */
+    private final java.util.LinkedHashSet<String> completedInvestments = new java.util.LinkedHashSet<>();
+    /** Cumulative permanent bonuses granted by completed investments. */
+    private float investmentProductionBonus;
+    private float investmentStorageBonus;
+    private float investmentResearchDiscount;
+    private float investmentWorkforceBonus;
+    private float investmentRevenueBonus;
+
+    // ── Task 18 development levels state ─────────────────────────────────
+    /**
+     * The settlement's development stage (1 = Small Settlement … 6 = Major
+     * Economic Center). Advances automatically when the next level's eight
+     * conditions are all met — money alone never unlocks a stage.
+     */
+    private int developmentLevel = 1;
+    /** Cumulative units produced since the simulation started. */
+    private float lifetimeProduced;
+    /** Cumulative units sold to the market since the simulation started. */
+    private float lifetimeSold;
+    /** Cumulative coin revenue since the simulation started. */
+    private float lifetimeRevenue;
 
     private static final class ConstructionSite {
         final String typeId;
@@ -450,6 +569,40 @@ public final class EconomySimulation {
                         construction.remainingCost, construction.remainingTicks));
                 }
             }
+            // Task 15: restore the unlocked tier and any in-progress research.
+            // Saves without a valid tier fall back to Manual; research debts
+            // and durations are clamped so a corrupt save cannot stall ticks.
+            if (state.techLevel >= 1 && state.techLevel <= TechnologyCatalog.maxLevel()) {
+                techLevel = state.techLevel;
+            }
+            researchRemainingCost = Math.max(0f, state.researchRemainingCost);
+            researchRemainingTicks = Math.max(0f, state.researchRemainingTicks);
+            // Task 16: restore completed investments (their permanent bonuses
+            // are recomputed from the ids) and any in-progress project. Unknown
+            // ids are ignored so a corrupt save cannot revive a mystery deal.
+            if (state.completedInvestments != null) {
+                for (String id : state.completedInvestments) {
+                    Investment investment = InvestmentCatalog.get(id);
+                    if (investment != null && completedInvestments.add(id)) {
+                        applyInvestmentEffect(investment);
+                    }
+                }
+            }
+            if (state.activeInvestmentId != null
+                && !completedInvestments.contains(state.activeInvestmentId)
+                && InvestmentCatalog.get(state.activeInvestmentId) != null) {
+                activeInvestmentId = state.activeInvestmentId;
+                investmentRemainingCost = Math.max(0f, state.investmentRemainingCost);
+            }
+            // Task 18: restore the development stage and the lifetime metrics
+            // that drive it. Invalid levels fall back to Small Settlement and
+            // counters are clamped so a corrupt save cannot skip stages.
+            if (state.developmentLevel >= 1 && state.developmentLevel <= DevelopmentCatalog.maxLevel()) {
+                developmentLevel = state.developmentLevel;
+            }
+            lifetimeProduced = Math.max(0f, state.lifetimeProduced);
+            lifetimeSold = Math.max(0f, state.lifetimeSold);
+            lifetimeRevenue = Math.max(0f, state.lifetimeRevenue);
         }
     }
 
@@ -577,6 +730,8 @@ public final class EconomySimulation {
     public void tick() {
         tickCount++;
         processConstruction();
+        processResearch();
+        processInvestments();
 
         // Active buildings = placed buildings whose construction has finished.
         TreeMap<String, Integer> active = new TreeMap<>();
@@ -584,6 +739,18 @@ public final class EconomySimulation {
             int activeCount = entry.getValue() - countSites(entry.getKey());
             if (activeCount > 0) active.put(entry.getKey(), activeCount);
         }
+
+        // Technology (Task 15): the current tier's cumulative bonuses are
+        // read once per tick and scale production speed, worker productivity,
+        // resource efficiency, energy efficiency, storage efficiency, sale
+        // prices and delivery capacity below. At Manual every factor is 1.
+        Technology tech = TechnologyCatalog.get(techLevel);
+        float productionFactor = tech.throughputFactor();
+        float resourceFactor = tech.resourceFactor();
+        float energyFactor = tech.energyFactor();
+        float storageFactor = tech.storageFactor();
+        float qualityFactor = tech.qualityFactor();
+        float transportFactor = tech.transportFactor();
 
         for (int i = 0; i < produced.length; i++) produced[i] = 0f;
         for (int i = 0; i < consumed.length; i++) consumed[i] = 0f;
@@ -597,7 +764,9 @@ public final class EconomySimulation {
         // that many workers; the pool is assigned greedily in sorted type
         // order. Whatever cannot be filled stays unemployed, and the wage is
         // paid only for the workers actually hired.
-        workingPopulation = population * WORKFORCE_PARTICIPATION;
+        // Task 16: the worker-education investment raises the working-age
+        // share, so a larger pool hires from the same population.
+        workingPopulation = population * (WORKFORCE_PARTICIPATION + investmentWorkforceBonus);
         workforceDemand = 0f;
         employedWorkers = 0f;
         staffedByType.clear();
@@ -616,8 +785,27 @@ public final class EconomySimulation {
         workforceAssigned = employedWorkers;
 
         // Shared storage: base capacity plus every active warehouse/storage
-        // building's inventory capacity.
-        settlement.setCapacity(settlementCapacityFor(active));
+        // building's inventory capacity, scaled by storage efficiency.
+        settlement.setCapacity(settlementCapacityFor(active, storageFactor));
+
+        // Energy network (Task 14): the settlement's backup grid plus every
+        // active power plant feeds the network; every active consumer draws
+        // from it. The balance is the spec's "energy production − energy
+        // consumption". When the grid is short (consumption exceeds
+        // production) the settlement runs at the fraction of its demand that
+        // is actually met, and every consuming building's production
+        // efficiency drops to that fraction.
+        energyProduction = BASE_ENERGY;
+        energyConsumption = 0f;
+        for (Map.Entry<String, Integer> entry : active.entrySet()) {
+            BuildingEconomy profile = EconomyData.get(entry.getKey());
+            if (profile == null) continue;
+            energyProduction += profile.getEnergyProduced() * entry.getValue();
+            energyConsumption += profile.getEnergyConsumed() * entry.getValue() * energyFactor;
+        }
+        energyBalance = energyProduction - energyConsumption;
+        energyEfficiency = energyConsumption <= 0f ? 1f
+            : clamp(energyProduction / energyConsumption, 0f, 1f);
 
         // Production (Task 7/8): a batch starts by reserving its full inputs
         // plus energy from the settlement's available stock; it then accrues
@@ -639,7 +827,7 @@ public final class EconomySimulation {
             }
             if (staffable <= 0) continue;
 
-            ResourceInventory inv = buildingInventory(entry.getKey(), profile, staffable);
+            ResourceInventory inv = buildingInventory(entry.getKey(), profile, staffable, storageFactor);
 
             int slots = batchSlots.getOrDefault(entry.getKey(), 0);
             while (slots < staffable) {
@@ -650,7 +838,7 @@ public final class EconomySimulation {
                 }
                 boolean canReserve = true;
                 for (Resource input : Resource.values()) {
-                    float need = profile.getInput(input);
+                    float need = profile.getInput(input) * resourceFactor;
                     if (need <= 0f) continue;
                     demand[input.ordinal()] += need;
                     if (settlement.getAvailable(input) < need) canReserve = false;
@@ -666,7 +854,7 @@ public final class EconomySimulation {
                 float[] held = batchReservations.computeIfAbsent(entry.getKey(),
                     key -> new float[Resource.values().length]);
                 for (Resource input : Resource.values()) {
-                    float need = profile.getInput(input);
+                    float need = profile.getInput(input) * resourceFactor;
                     if (need <= 0f) continue;
                     settlement.reserve(input, need);
                     inv.markIncoming(input, need);
@@ -684,7 +872,12 @@ public final class EconomySimulation {
             }
 
             float progress = productionProgress.getOrDefault(entry.getKey(), 0f);
-            progress += slots * profile.getProductionCapacity();
+            // Task 14: an energy shortage throttles only the consuming
+            // buildings. Producers that draw no grid power run at full speed.
+            float typeEfficiency = profile.getEnergyConsumed() > 0f ? energyEfficiency : 1f;
+            // Task 15: production speed × worker productivity scale the batch
+            // progress, so staffed producers finish batches faster.
+            progress += slots * profile.getProductionCapacity() * typeEfficiency * productionFactor;
             float productionTime = profile.getProductionTime();
             while (progress >= productionTime && slots > 0) {
                 float[] held = batchReservations.get(entry.getKey());
@@ -702,8 +895,11 @@ public final class EconomySimulation {
                 for (Resource output : Resource.values()) {
                     float outputRate = profile.getOutput(output);
                     if (outputRate <= 0f) continue;
-                    inv.produceInto(output, outputRate);
-                    produced[output.ordinal()] += outputRate;
+                    // Task 16: the capacity-expansion investment yields more
+                    // product per completed batch.
+                    float batchOutput = outputRate * (1f + investmentProductionBonus);
+                    inv.produceInto(output, batchOutput);
+                    produced[output.ordinal()] += batchOutput;
                 }
                 slots--;
                 progress -= productionTime;
@@ -753,7 +949,7 @@ public final class EconomySimulation {
                 while (launches < dispatchBudget()) {
                     if (inv == null || inv.getStored(route.resource) <= 0f) break;
                     int tripTicks = tripTicks(truckSpeed(), roadFactor());
-                    float capacity = trucksOnRoute * truckCapacity;
+                    float capacity = trucksOnRoute * truckCapacity * transportFactor;
                     float load = Math.min(inv.getStored(route.resource), capacity);
                     inv.shipOut(route.resource, load);
                     DeliveryRoute.Load trip = new DeliveryRoute.Load();
@@ -868,7 +1064,10 @@ public final class EconomySimulation {
             if (volume <= 0f) continue;
             settlement.shipOut(resource, volume);
             sold[resource.ordinal()] += volume;
-            revenue += volume * price[resource.ordinal()] * marketMultiplier;
+            // Task 15: better product quality sells for more per unit.
+            // Task 16: the export-agreement investment lifts every sale price.
+            revenue += volume * price[resource.ordinal()] * marketMultiplier * qualityFactor
+                * (1f + investmentRevenueBonus);
         }
         settlement.receive(Resource.COINS, revenue);
 
@@ -927,6 +1126,14 @@ public final class EconomySimulation {
         } else if (population < housing) {
             population = Math.min(housing, population + GROWTH_RATE);
         }
+
+        // Task 18: lifetime metrics feed the development conditions, and the
+        // settlement advances a stage when every threshold of the next level
+        // is met. Development is driven by real growth, never money alone.
+        lifetimeProduced += sum(produced);
+        lifetimeSold += sum(sold);
+        lifetimeRevenue += revenue;
+        updateDevelopment();
     }
 
     private void processConstruction() {
@@ -947,6 +1154,83 @@ public final class EconomySimulation {
             }
         }
         totalInvestment += investedThisTick;
+    }
+
+    /**
+     * Task 15: funds the in-progress research project like construction —
+     * coins each tick until the price is paid, then the research ticks down
+     * until it finishes. Research is capital investment, so what is paid is
+     * reported separately from the operating costs.
+     */
+    private void processResearch() {
+        researchInvestedThisTick = 0f;
+        if (isMaxTechnology()) return;
+        if (researchRemainingCost > 0f && settlement.getStored(Resource.COINS) > 0f) {
+            float invest = Math.min(settlement.getStored(Resource.COINS),
+                Math.min(researchRemainingCost, RESEARCH_SPEED));
+            settlement.consume(Resource.COINS, invest);
+            researchRemainingCost -= invest;
+            researchInvestedThisTick += invest;
+        }
+        if (researchRemainingCost <= 0f && researchRemainingTicks > 0f) {
+            researchRemainingTicks -= 1f;
+            if (researchRemainingTicks <= 0f) {
+                techLevel = Math.min(TechnologyCatalog.maxLevel(), techLevel + 1);
+                researchRemainingTicks = 0f;
+            }
+        }
+    }
+
+    /**
+     * Task 16: funds the active investment project like construction and
+     * research — coins each tick until the price is paid, then the investment
+     * completes and its permanent long-term effect is applied. An investment
+     * can never be repeated, and only one is funded at a time.
+     */
+    private void processInvestments() {
+        investmentInvestedThisTick = 0f;
+        if (activeInvestmentId == null) return;
+        if (investmentRemainingCost > 0f && settlement.getStored(Resource.COINS) > 0f) {
+            float invest = Math.min(settlement.getStored(Resource.COINS),
+                Math.min(investmentRemainingCost, INVESTMENT_SPEED));
+            settlement.consume(Resource.COINS, invest);
+            investmentRemainingCost -= invest;
+            investmentInvestedThisTick += invest;
+        }
+        if (investmentRemainingCost <= 0f) {
+            completeInvestment(activeInvestmentId);
+        }
+    }
+
+    /** Applies an investment's permanent effect and records it as done. */
+    private void completeInvestment(String id) {
+        Investment investment = InvestmentCatalog.get(id);
+        completedInvestments.add(id);
+        if (investment != null) applyInvestmentEffect(investment);
+        activeInvestmentId = null;
+        investmentRemainingCost = 0f;
+    }
+
+    private void applyInvestmentEffect(Investment investment) {
+        switch (investment.getCategory()) {
+            case PRODUCTION:
+                investmentProductionBonus += investment.getEffectMagnitude();
+                break;
+            case INFRASTRUCTURE:
+                investmentStorageBonus += investment.getEffectMagnitude();
+                break;
+            case TECHNOLOGY:
+                investmentResearchDiscount += investment.getEffectMagnitude();
+                break;
+            case WORKFORCE:
+                investmentWorkforceBonus += investment.getEffectMagnitude();
+                break;
+            case MARKETS:
+                investmentRevenueBonus += investment.getEffectMagnitude();
+                break;
+            default:
+                break;
+        }
     }
 
     private int countSites(String typeId) {
@@ -984,15 +1268,16 @@ public final class EconomySimulation {
         return housing;
     }
 
-    private float settlementCapacityFor(Map<String, Integer> active) {
+    private float settlementCapacityFor(Map<String, Integer> active, float storageFactor) {
         float capacity = BASE_STORAGE_CAPACITY;
         for (Map.Entry<String, Integer> entry : active.entrySet()) {
             BuildingEconomy profile = EconomyData.get(entry.getKey());
             if (profile != null && profile.isStorage()) {
-                capacity += profile.getInventoryCapacity() * entry.getValue();
+                capacity += profile.getInventoryCapacity() * entry.getValue() * storageFactor;
             }
         }
-        return capacity;
+        // Task 16: the storage-expansion investment adds permanent capacity.
+        return capacity + investmentStorageBonus;
     }
 
     private float nonMoneyStored() {
@@ -1086,13 +1371,13 @@ public final class EconomySimulation {
         return Math.max(1, Math.round(ROUTE_DISTANCE / Math.max(0.1f, truckSpeed * roadFactor)));
     }
 
-    private ResourceInventory buildingInventory(String typeId, BuildingEconomy profile, int staffable) {
+    private ResourceInventory buildingInventory(String typeId, BuildingEconomy profile, int staffable, float storageFactor) {
         ResourceInventory inv = buildingInventories.get(typeId);
         if (inv == null) {
             inv = new ResourceInventory(0f, 0f);
             buildingInventories.put(typeId, inv);
         }
-        inv.setCapacity(profile.getInventoryCapacity() * staffable);
+        inv.setCapacity(profile.getInventoryCapacity() * staffable * storageFactor);
         return inv;
     }
 
@@ -1250,11 +1535,11 @@ public final class EconomySimulation {
         return route == null ? 0 : route.nextArrivalTick();
     }
 
-    /** Units one trip of the route can carry today (assigned trucks × capacity). */
+    /** Units one trip of the route can carry today (assigned trucks × capacity, scaled by transport efficiency). */
     public float getRouteCapacity(String sourceTypeId, Resource resource) {
         DeliveryRoute route = findRoute(sourceTypeId, resource);
         if (route == null) return 0f;
-        return route.effectiveTrucks(fleetTrucks()) * truckCapacity();
+        return route.effectiveTrucks(fleetTrucks()) * truckCapacity() * TechnologyCatalog.get(techLevel).transportFactor();
     }
 
     /** Number of delivery routes currently serving the settlement. */
@@ -1265,6 +1550,326 @@ public final class EconomySimulation {
         float total = 0f;
         for (DeliveryRoute route : routes) total += route.inTransit();
         return total;
+    }
+
+    // ── Task 14 energy network read-outs ─────────────────────────────────
+
+    /** Grid energy the active power plants feed the network this tick. */
+    public float getEnergyProduction() { return energyProduction; }
+
+    /** Grid energy the active consumers draw from the network this tick. */
+    public float getEnergyConsumption() { return energyConsumption; }
+
+    /** Energy balance: production − consumption (positive is a surplus). */
+    public float getEnergyBalance() { return energyBalance; }
+
+    /**
+     * How much of the grid's demand is met, 0..1 (1 when the grid is
+     * self-sufficient). Every consuming building runs at this efficiency, so
+     * an energy shortage throttles factories instead of stopping them dead.
+     */
+    public float getEnergyEfficiency() { return energyEfficiency; }
+
+    /** Grid energy the active instances of a type produce per tick. */
+    public float getBuildingEnergyProduced(String typeId) {
+        BuildingEconomy profile = EconomyData.get(typeId);
+        return profile == null ? 0f : profile.getEnergyProduced() * getActiveCount(typeId);
+    }
+
+    /** Grid energy the active instances of a type draw per tick. */
+    public float getBuildingEnergyConsumed(String typeId) {
+        BuildingEconomy profile = EconomyData.get(typeId);
+        return profile == null ? 0f : profile.getEnergyConsumed() * getActiveCount(typeId);
+    }
+
+    // ── Task 15 technology & productivity read-outs ──────────────────────
+
+    /** The settlement's unlocked tier level (1 = Manual … 5 = Advanced Technology). */
+    public int getTechLevel() { return techLevel; }
+
+    /** The current tier's full data (bonuses, name key). */
+    public Technology getTechnology() { return TechnologyCatalog.get(techLevel); }
+
+    /** i18n key for the current tier's name, e.g. {@code tech.semi}. */
+    public String getTechnologyNameKey() { return getTechnology().getNameKey(); }
+
+    /** True when the highest tier has been reached. */
+    public boolean isMaxTechnology() { return techLevel >= TechnologyCatalog.maxLevel(); }
+
+    /** True while a research project is in progress. */
+    public boolean isResearching() { return researchRemainingCost > 0f || researchRemainingTicks > 0f; }
+
+    /** Coins still owed on the in-progress research project (0 when none). */
+    public float getResearchRemainingCost() { return researchRemainingCost; }
+
+    /** Ticks still needed to finish the research project (0 when none). */
+    public float getResearchRemainingTicks() { return researchRemainingTicks; }
+
+    /** Coins invested into research this tick (capital, not an operating cost). */
+    public float getResearchInvestedThisTick() { return researchInvestedThisTick; }
+
+    /**
+     * Overall progress of the in-progress project as coin-equivalent work:
+     * cost paid plus funded research ticks, out of the project's total. 0
+     * when nothing is being researched, 1 when the current tier is the last.
+     */
+    public float getResearchProgress() {
+        if (isMaxTechnology()) return 1f;
+        if (!isResearching()) return 0f;
+        Technology next = TechnologyCatalog.get(techLevel + 1);
+        float total = next.getResearchCost() + next.getResearchTicks() * RESEARCH_SPEED;
+        if (total <= 0f) return 0f;
+        float done = (next.getResearchCost() - researchRemainingCost)
+            + (next.getResearchTicks() - researchRemainingTicks) * RESEARCH_SPEED;
+        return Math.max(0f, Math.min(1f, done / total));
+    }
+
+    /**
+     * Starts research on the next tier. Fails (returns false) when the
+     * highest tier is already unlocked or a project is already running.
+     */
+    public boolean startResearch() {
+        if (isMaxTechnology()) return false;
+        if (isResearching()) return false;
+        Technology next = TechnologyCatalog.get(techLevel + 1);
+        // Task 16: the research-endowment investment discounts the next project.
+        researchRemainingCost = next.getResearchCost() * (1f - investmentResearchDiscount);
+        researchRemainingTicks = next.getResearchTicks();
+        return true;
+    }
+
+    /** Combined speed × productivity throughput factor of the current tier. */
+    public float getProductivityFactor() { return getTechnology().throughputFactor(); }
+
+    /** Production-speed factor (1 at Manual, 2 at Advanced Technology). */
+    public float getProductionSpeedFactor() { return getTechnology().speedFactor(); }
+
+    /** Worker-productivity factor (1 at Manual, 1.5 at Advanced Technology). */
+    public float getWorkerProductivityFactor() { return getTechnology().productivityFactor(); }
+
+    /** Resource-efficiency factor (1 at Manual, 0.8 at Advanced Technology). */
+    public float getResourceEfficiencyFactor() { return getTechnology().resourceFactor(); }
+
+    /** Energy-efficiency factor (1 at Manual, 0.8 at Advanced Technology). */
+    public float getEnergyEfficiencyFactor() { return getTechnology().energyFactor(); }
+
+    /** Storage-efficiency factor (1 at Manual, 1.4 at Advanced Technology). */
+    public float getStorageEfficiencyFactor() { return getTechnology().storageFactor(); }
+
+    /** Product-quality factor (1 at Manual, 1.2 at Advanced Technology). */
+    public float getProductQualityFactor() { return getTechnology().qualityFactor(); }
+
+    /** Transportation-efficiency factor (1 at Manual, 1.4 at Advanced Technology). */
+    public float getTransportEfficiencyFactor() { return getTechnology().transportFactor(); }
+
+    /**
+     * Test/sandbox hook: sets the tier directly, cancelling any in-progress
+     * research. Clamped to the valid range 1..5. Package-private on purpose —
+     * the live game always progresses through funded research.
+     */
+    void setTechnologyLevel(int level) {
+        techLevel = Math.max(1, Math.min(TechnologyCatalog.maxLevel(), level));
+        researchRemainingCost = 0f;
+        researchRemainingTicks = 0f;
+    }
+
+    // ── Task 16 investment & planning read-outs ──────────────────────────
+
+    /**
+     * Starts funding an investment project. Fails (returns false) when the id
+     * is unknown, an investment is already being funded, or the investment was
+     * already completed — each can be taken at most once.
+     */
+    public boolean startInvestment(String id) {
+        if (id == null) return false;
+        if (activeInvestmentId != null) return false;
+        if (completedInvestments.contains(id)) return false;
+        Investment investment = InvestmentCatalog.get(id);
+        if (investment == null) return false;
+        activeInvestmentId = id;
+        investmentRemainingCost = investment.getCost();
+        return true;
+    }
+
+    /** True while an investment project is being funded. */
+    public boolean isInvesting() { return activeInvestmentId != null; }
+
+    /** The active investment's catalog id, or null. */
+    public String getActiveInvestmentId() { return activeInvestmentId; }
+
+    /** Coins still owed on the active investment (0 when none). */
+    public float getInvestmentRemainingCost() { return investmentRemainingCost; }
+
+    /** Coins invested into the active investment this tick (capital). */
+    public float getInvestmentInvestedThisTick() { return investmentInvestedThisTick; }
+
+    /** Overall funding progress of the active investment, 0..1 (0 when none). */
+    public float getInvestmentProgress() {
+        if (activeInvestmentId == null) return 0f;
+        Investment investment = InvestmentCatalog.get(activeInvestmentId);
+        float total = investment == null ? investmentRemainingCost : investment.getCost();
+        if (total <= 0f) return 0f;
+        return Math.max(0f, Math.min(1f, 1f - investmentRemainingCost / total));
+    }
+
+    /** True once an investment has been fully paid and its effect applied. */
+    public boolean isInvestmentCompleted(String id) { return completedInvestments.contains(id); }
+
+    /** True when the investment can be started right now. */
+    public boolean canStartInvestment(String id) {
+        return id != null && activeInvestmentId == null
+            && !completedInvestments.contains(id) && InvestmentCatalog.get(id) != null;
+    }
+
+    /** The ids of every completed investment, in completion order. */
+    public List<String> getCompletedInvestments() {
+        return new ArrayList<>(completedInvestments);
+    }
+
+    /** Permanent per-batch output bonus from completed investments (0.1 = +10%). */
+    public float getInvestmentProductionBonus() { return investmentProductionBonus; }
+
+    /** Permanent shared-storage bonus from completed investments (flat capacity). */
+    public float getInvestmentStorageBonus() { return investmentStorageBonus; }
+
+    /** Permanent research-cost discount from completed investments (0.1 = −10%). */
+    public float getInvestmentResearchDiscount() { return investmentResearchDiscount; }
+
+    /** Permanent working-age share bonus from completed investments (0.05 = +5%). */
+    public float getInvestmentWorkforceBonus() { return investmentWorkforceBonus; }
+
+    /** Permanent sale-revenue bonus from completed investments (0.05 = +5%). */
+    public float getInvestmentRevenueBonus() { return investmentRevenueBonus; }
+
+    // ── Task 18 development levels ───────────────────────────────────────
+
+    /** One condition's standing toward the next development stage. */
+    public static final class DevelopmentConditionStatus {
+        public final DevelopmentCondition condition;
+        public final float current;
+        public final float required;
+        public final boolean met;
+
+        DevelopmentConditionStatus(DevelopmentCondition condition, float current, float required) {
+            this.condition = condition;
+            this.current = current;
+            this.required = required;
+            this.met = current >= required;
+        }
+    }
+
+    /**
+     * The current value of one development condition. Every condition is a
+     * real economy metric; none of them is money in the treasury, so a rich
+     * but stagnant settlement cannot advance.
+     */
+    public float currentValue(DevelopmentCondition condition) {
+        switch (condition) {
+            case POPULATION:
+                return population;
+            case PRODUCTION:
+                return lifetimeProduced;
+            case EMPLOYMENT:
+                return workingPopulation > 0f ? employedWorkers / workingPopulation : 0f;
+            case INFRASTRUCTURE:
+                int activeBuildings = 0;
+                for (Map.Entry<String, Integer> entry : placedCounts.entrySet()) {
+                    activeBuildings += getActiveCount(entry.getKey());
+                }
+                return activeBuildings;
+            case REVENUE:
+                return lifetimeRevenue;
+            case TECHNOLOGY:
+                return techLevel;
+            case HOUSING:
+                return getHousingCapacity();
+            case MARKET_ACTIVITY:
+                return lifetimeSold;
+            default:
+                return 0f;
+        }
+    }
+
+    /** Total housing capacity of the active houses (Task 18 condition). */
+    public float getHousingCapacity() {
+        float housing = 0f;
+        for (Map.Entry<String, Integer> entry : placedCounts.entrySet()) {
+            BuildingEconomy profile = EconomyData.get(entry.getKey());
+            int activeCount = getActiveCount(entry.getKey());
+            if (profile != null && activeCount > 0 && profile.getHousing() > 0f) {
+                housing += profile.getHousing() * activeCount;
+            }
+        }
+        return housing;
+    }
+
+    /** Advances the stage by one when the next level's conditions are met. */
+    private void updateDevelopment() {
+        if (isMaxDevelopment()) return;
+        DevelopmentLevel next = DevelopmentCatalog.get(developmentLevel + 1);
+        if (next.isFullyMet(this)) {
+            developmentLevel = Math.min(DevelopmentCatalog.maxLevel(), developmentLevel + 1);
+        }
+    }
+
+    /** The settlement's current development stage, 1 = Small Settlement … 6 = Major Economic Center. */
+    public int getDevelopmentLevel() { return developmentLevel; }
+
+    /** i18n key of the current stage's name, e.g. {@code development.village}. */
+    public String getDevelopmentNameKey() {
+        return DevelopmentCatalog.get(developmentLevel).getNameKey();
+    }
+
+    /** True once the settlement reached the final stage. */
+    public boolean isMaxDevelopment() { return developmentLevel >= DevelopmentCatalog.maxLevel(); }
+
+    /** Cumulative units produced since the simulation started. */
+    public float getLifetimeProduced() { return lifetimeProduced; }
+
+    /** Cumulative units sold to the market since the simulation started. */
+    public float getLifetimeSold() { return lifetimeSold; }
+
+    /** Cumulative coin revenue since the simulation started. */
+    public float getLifetimeRevenue() { return lifetimeRevenue; }
+
+    /**
+     * Overall progress toward the next stage, 0..1 — the average of the eight
+     * condition ratios (1 once the final stage is reached).
+     */
+    public float getDevelopmentProgress() {
+        if (isMaxDevelopment()) return 1f;
+        DevelopmentLevel next = DevelopmentCatalog.get(developmentLevel + 1);
+        float total = 0f;
+        int counted = 0;
+        for (DevelopmentCondition condition : DevelopmentCondition.values()) {
+            float required = next.required(condition);
+            if (required > 0f) {
+                total += Math.min(1f, currentValue(condition) / required);
+                counted++;
+            }
+        }
+        return counted == 0 ? 1f : clamp(total / counted, 0f, 1f);
+    }
+
+    /** Every condition's standing toward the next stage, empty at the final stage. */
+    public List<DevelopmentConditionStatus> getDevelopmentConditions() {
+        List<DevelopmentConditionStatus> result = new ArrayList<>();
+        if (isMaxDevelopment()) return result;
+        DevelopmentLevel next = DevelopmentCatalog.get(developmentLevel + 1);
+        for (DevelopmentCondition condition : DevelopmentCondition.values()) {
+            result.add(new DevelopmentConditionStatus(condition,
+                currentValue(condition), next.required(condition)));
+        }
+        return result;
+    }
+
+    /**
+     * Test/sandbox hook: places the settlement at a given stage directly.
+     * Clamped to the valid range 1..6. Package-private on purpose — the live
+     * game always advances through the catalog's measurable conditions.
+     */
+    void setDevelopmentLevel(int level) {
+        developmentLevel = Math.max(1, Math.min(DevelopmentCatalog.maxLevel(), level));
     }
 
     // ── Task 10 building operating costs ─────────────────────────────────
@@ -1406,17 +2011,18 @@ public final class EconomySimulation {
 
     // ── Task 8 inventory / warehousing read-outs ─────────────────────────
 
-    /** Total shared storage: base 200 plus active warehouses' capacity. */
+    /** Total shared storage: base 200 plus active warehouses' capacity, scaled by storage efficiency. */
     public float getStorageCapacity() {
+        float storageFactor = TechnologyCatalog.get(techLevel).storageFactor();
         float capacity = BASE_STORAGE_CAPACITY;
         for (Map.Entry<String, Integer> entry : placedCounts.entrySet()) {
             BuildingEconomy profile = EconomyData.get(entry.getKey());
             int activeCount = getActiveCount(entry.getKey());
             if (profile != null && activeCount > 0 && profile.isStorage()) {
-                capacity += profile.getInventoryCapacity() * activeCount;
+                capacity += profile.getInventoryCapacity() * activeCount * storageFactor;
             }
         }
-        return capacity;
+        return capacity + investmentStorageBonus;
     }
 
     public float getStoredInventory(Resource resource) { return settlement.getStored(resource); }
@@ -1483,6 +2089,16 @@ public final class EconomySimulation {
         state.money = settlement.getStored(Resource.COINS);
         state.population = population;
         state.averageWage = averageWage;
+        state.techLevel = techLevel;
+        state.researchRemainingCost = researchRemainingCost;
+        state.researchRemainingTicks = researchRemainingTicks;
+        state.activeInvestmentId = activeInvestmentId;
+        state.investmentRemainingCost = investmentRemainingCost;
+        for (String id : completedInvestments) state.completedInvestments.add(id);
+        state.developmentLevel = developmentLevel;
+        state.lifetimeProduced = lifetimeProduced;
+        state.lifetimeSold = lifetimeSold;
+        state.lifetimeRevenue = lifetimeRevenue;
         for (Resource resource : Resource.values()) {
             float amount = settlement.getStored(resource);
             if (amount > 0f) {
@@ -1504,5 +2120,11 @@ public final class EconomySimulation {
 
     private static float clamp(float value, float min, float max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static float sum(float[] values) {
+        float total = 0f;
+        for (float value : values) total += value;
+        return total;
     }
 }

@@ -84,6 +84,10 @@ public final class SkinFactory {
         skin.add("overlay",        solid(skin, "overlay-tex",        new Color(0f,    0f,    0f,    0.55f)), Drawable.class);
         skin.add("icon-toggle-bg", rounded(skin, "icon-toggle-bg-tex", ICON_BG,     darken(ICON_BG, 0.45f),     lighten(ICON_BG, 0.40f)), Drawable.class);
         skin.add("icon-toggle-on", rounded(skin, "icon-toggle-on-tex", ICON_ACTIVE, lighten(ICON_ACTIVE, 0.45f), lighten(ICON_ACTIVE, 0.50f)), Drawable.class);
+        skin.add("chip",          rounded(skin, "chip-tex",          new Color(0.12f, 0.12f, 0.17f, 0.92f), lighten(new Color(0.20f, 0.20f, 0.28f, 0.92f), 0.10f), lighten(new Color(0.12f, 0.12f, 0.17f, 0.92f), 0.25f)), Drawable.class);
+        skin.add("divider",       solid(skin, "divider-tex",        new Color(1f,    1f,    1f,    0.16f)), Drawable.class);
+        skin.add("circle-bg",     circular(skin, "circle-bg-tex",   ICON_BG,     lighten(ICON_BG, 0.35f)), Drawable.class);
+        skin.add("circle-on",     circular(skin, "circle-on-tex",   ICON_ACTIVE, lighten(ICON_ACTIVE, 0.50f)), Drawable.class);
         skin.add("notif-info-bg",    rounded(skin, "notif-info-tex",    COL_INFO,    darken(COL_INFO, 0.35f),    lighten(COL_INFO, 0.40f)), Drawable.class);
         skin.add("notif-success-bg", rounded(skin, "notif-success-tex", COL_SUCCESS, darken(COL_SUCCESS, 0.35f), lighten(COL_SUCCESS, 0.40f)), Drawable.class);
         skin.add("notif-warning-bg", rounded(skin, "notif-warning-tex", COL_WARNING, darken(COL_WARNING, 0.35f), lighten(COL_WARNING, 0.40f)), Drawable.class);
@@ -141,6 +145,14 @@ public final class SkinFactory {
             s.checked = skin.getDrawable("icon-toggle-on");
             skin.add("icon-toggle-" + sz, s);
         }
+
+        // ── Circular dock item buttons ─────────────────────────────────────
+        Button.ButtonStyle circle = new Button.ButtonStyle();
+        circle.up      = skin.getDrawable("circle-bg");
+        circle.down    = skin.getDrawable("circle-on");
+        circle.over    = skin.getDrawable("circle-on");
+        circle.checked = skin.getDrawable("circle-on");
+        skin.add("circle", circle);
 
         // ── Window (used by LibGdxModel) ──────────────────────────────────
         Window.WindowStyle modalStyle = new Window.WindowStyle();
@@ -229,6 +241,35 @@ public final class SkinFactory {
                     if (inRounded(x, y, size, radius, 0) && !inRounded(x, y, size, radius, 2)) {
                         px.drawPixel(x, y, Color.rgba8888(border));
                     }
+                }
+            }
+        }
+
+        Texture tex = new Texture(px);
+        px.dispose();
+        int split = radius + 2;
+        NinePatch patch = new NinePatch(new TextureRegion(tex), split, split, split, split);
+        skin.add(key, tex, Texture.class);
+        return new NinePatchDrawable(patch);
+    }
+
+    /**
+     * Generates a circular 9-patch drawable: filled disc with a 3px ring.
+     * Splits are placed at the radius so stretching preserves the circle.
+     */
+    private static Drawable circular(Skin skin, String key, Color fill, Color ring) {
+        int size = 48;
+        int cx = size / 2;
+        int radius = size / 2 - 2;
+
+        Pixmap px = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                int dx = x - cx;
+                int dy = y - cx;
+                int dist = (int) Math.sqrt(dx * dx + dy * dy);
+                if (dist <= radius) {
+                    px.drawPixel(x, y, Color.rgba8888(dist > radius - 3 ? ring : fill));
                 }
             }
         }

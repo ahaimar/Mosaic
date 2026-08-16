@@ -17,7 +17,7 @@ class BuildingCatalogTest {
 
     @Test
     void registersEveryCatalogType() {
-        assertEquals(77, BuildingCatalog.getAll().size);
+        assertEquals(81, BuildingCatalog.getAll().size);
     }
 
     @Test
@@ -43,7 +43,7 @@ class BuildingCatalogTest {
 
     @Test
     void categoryFilterPartitionsTheCatalog() {
-        assertEquals(41, BuildingCatalog.getByCategory(BuildingType.Category.BUILDING).size);
+        assertEquals(45, BuildingCatalog.getByCategory(BuildingType.Category.BUILDING).size);
         assertEquals(22, BuildingCatalog.getByCategory(BuildingType.Category.ENVIRONMENT).size);
         assertEquals(14, BuildingCatalog.getByCategory(BuildingType.Category.INFRASTRUCTURE).size);
     }
@@ -85,7 +85,8 @@ class BuildingCatalogTest {
             "lumber_hut", "stone_mine", "farm", "workshop", "dairy", "ranch",
             "iron_mine", "coal_mine", "smelter", "carpentry",
             "machine_factory", "assembly_factory",
-            "warehouse", "large_warehouse"));
+            "warehouse", "large_warehouse",
+            "power_plant", "solar_plant", "advanced_power_plant"));
         assertEquals(expected, multiCell);
     }
 

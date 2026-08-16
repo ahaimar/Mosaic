@@ -74,6 +74,18 @@ public final class BuildingCatalog {
         register(new BuildingType("cobbled_road", "Cobbled Road", BuildingType.Category.INFRASTRUCTURE,
             1, 1, new Color(0.6f, 0.55f, 0.45f, 1f), 0));
 
+        // Energy production (Task 14): power plants feed the settlement's
+        // energy network. Their output lives in the EconomyData table, never
+        // on the type.
+        register(new BuildingType("generator", "Generator", BuildingType.Category.BUILDING,
+            1, 1, new Color(0.9f, 0.8f, 0.35f, 1f), 0));
+        register(new BuildingType("power_plant", "Power Plant", BuildingType.Category.BUILDING,
+            2, 2, new Color(0.55f, 0.5f, 0.9f, 1f), 0));
+        register(new BuildingType("solar_plant", "Solar Plant", BuildingType.Category.BUILDING,
+            2, 2, new Color(0.95f, 0.85f, 0.3f, 1f), 0));
+        register(new BuildingType("advanced_power_plant", "Advanced Power Plant", BuildingType.Category.BUILDING,
+            3, 2, new Color(0.6f, 0.45f, 0.85f, 1f), 0));
+
         register(new BuildingType("tree", "Tree", BuildingType.Category.ENVIRONMENT,
             1, 1, new Color(0.3f, 0.65f, 0.3f, 1f), 0));
         register(new BuildingType("bush", "Bush", BuildingType.Category.ENVIRONMENT,

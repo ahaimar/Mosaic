@@ -59,24 +59,26 @@ class PlayerProgressTest {
         // 6 base free types + 18 map-specific types (each map's own buildings
         // are free; the toolbar filters them per world, not PlayerProgress)
         // + 15 free economic buildings (Task 5/6/7/8 producers, converters and
-        // warehouses) + 3 free transport buildings (Task 13).
-        assertEquals(42, progress.getUnlockedTypes().size);
+        // warehouses) + 3 free transport buildings (Task 13) + 4 free energy
+        // plants (Task 14).
+        assertEquals(46, progress.getUnlockedTypes().size);
         assertTrue(progress.isUnlocked(BuildingCatalog.get("small_house")));
         assertTrue(progress.isUnlocked(BuildingCatalog.get("tree")));
         assertTrue(progress.isUnlocked(BuildingCatalog.get("road_cross")));
         assertTrue(progress.isUnlocked(BuildingCatalog.get("palm")));
         assertTrue(progress.isUnlocked(BuildingCatalog.get("warehouse")));
         assertTrue(progress.isUnlocked(BuildingCatalog.get("truck_depot")));
+        assertTrue(progress.isUnlocked(BuildingCatalog.get("generator")));
         assertFalse(progress.isUnlocked(BuildingCatalog.get("bush")));
     }
 
     @Test
     void unlockedSetGrowsAtEachThreshold() {
-        assertEquals(42, new PlayerProgress(0).getUnlockedTypes().size);
-        assertEquals(42, new PlayerProgress(9).getUnlockedTypes().size);
-        assertEquals(47, new PlayerProgress(10).getUnlockedTypes().size);
-        assertEquals(50, new PlayerProgress(25).getUnlockedTypes().size);
-        assertEquals(51, new PlayerProgress(50).getUnlockedTypes().size);
+        assertEquals(46, new PlayerProgress(0).getUnlockedTypes().size);
+        assertEquals(46, new PlayerProgress(9).getUnlockedTypes().size);
+        assertEquals(51, new PlayerProgress(10).getUnlockedTypes().size);
+        assertEquals(54, new PlayerProgress(25).getUnlockedTypes().size);
+        assertEquals(55, new PlayerProgress(50).getUnlockedTypes().size);
     }
 
     @Test

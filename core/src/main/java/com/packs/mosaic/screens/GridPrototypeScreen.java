@@ -12,7 +12,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -23,6 +22,7 @@ import com.packs.mosaic.components.BottomToolbar;
 import com.packs.mosaic.components.ChallengePanel;
 import com.packs.mosaic.components.LibGdxButton;
 import com.packs.mosaic.components.LibGdxToast;
+import com.packs.mosaic.components.ResourceBar;
 import com.packs.mosaic.components.SeasonBar;
 import com.packs.mosaic.components.SparkleEffect;
 import com.packs.mosaic.components.UnlockPanel;
@@ -50,7 +50,6 @@ import com.packs.mosaic.world.Season;
 import com.packs.mosaic.world.UnlockDefinition;
 import com.packs.mosaic.world.VillageGrid;
 import com.packs.mosaic.world.econ.EconomySimulation;
-import com.packs.mosaic.world.econ.Resource;
 
 import java.util.TreeMap;
 
@@ -110,7 +109,7 @@ public class GridPrototypeScreen extends BaseScreen {
     private SparkleEffect unlockSparkle;
     private Runnable onBackToMaps;
 
-    private Label statusLabel;
+    private ResourceBar resourceBar;
     private Label selectionLabel;
     private float elapsedTime;
 
@@ -209,6 +208,7 @@ public class GridPrototypeScreen extends BaseScreen {
         inputController = new GridInputController(worldCamera, worldViewport, grid, MIN_ZOOM, MAX_ZOOM, placementController);
 
         buildHud();
+        buildResourceBar();
         buildSideControls();
         buildSeasonOverlay();
 
@@ -264,22 +264,19 @@ public class GridPrototypeScreen extends BaseScreen {
         selectionLabel = new Label("", skin, "small");
         hud.add(selectionLabel).left().expandX().padLeft(20f);
 
-        statusLabel = new Label("", skin, "small");
-        hud.add(statusLabel).right().padRight(12f);
-
         LibGdxButton saveButton = new LibGdxButton("SAVE", "save", LibGdxButton.Size.SM, skin, this::saveGame);
-        hud.add(saveButton).right().width(92f).height(36f).padRight(16f);
+        hud.add(saveButton).right().top().width(92f).height(36f).padRight(16f);
 
         LibGdxButton mapsButton = new LibGdxButton(tr("map.menu"), "ghost", LibGdxButton.Size.SM, skin, () -> {
             if (onBackToMaps != null) onBackToMaps.run();
         });
-        hud.add(mapsButton).right().width(100f).height(36f).padRight(10f);
+        hud.add(mapsButton).right().top().width(100f).height(36f).padRight(10f);
 
         LibGdxButton unlockButton = new LibGdxButton(tr("unlock.menu"), "secondary", LibGdxButton.Size.SM, skin, () -> {
             unlockPanel.setVisible(!unlockPanel.isVisible());
             AudioManager.getInstance().play(AudioManager.Sfx.CLICK);
         });
-        hud.add(unlockButton).right().width(140f).height(36f).padRight(10f);
+        hud.add(unlockButton).right().top().width(140f).height(36f).padRight(10f);
 
         Table overlay = new Table(skin);
         overlay.setFillParent(true);
@@ -288,11 +285,21 @@ public class GridPrototypeScreen extends BaseScreen {
         stage.addActor(overlay);
     }
 
+    /** Full-width economy strip (grouped container chips) under the HUD row. */
+    private void buildResourceBar() {
+        resourceBar = new ResourceBar(skin, economy, progress);
+        Table overlay = new Table(skin);
+        overlay.setFillParent(true);
+        overlay.top();
+        overlay.add(resourceBar).growX().pad(96f, 20f, 0f, 20f);
+        stage.addActor(overlay);
+    }
+
     private void buildChallengeOverlay() {
         Table overlay = new Table(skin);
         overlay.setFillParent(true);
         overlay.top().left();
-        overlay.add(challengePanel).width(280f).pad(92f, 20f, 0f, 0f);
+        overlay.add(challengePanel).width(280f).pad(168f, 20f, 0f, 0f);
         stage.addActor(overlay);
     }
 
@@ -300,7 +307,7 @@ public class GridPrototypeScreen extends BaseScreen {
         Table overlay = new Table(skin);
         overlay.setFillParent(true);
         overlay.top().right();
-        overlay.add(unlockPanel).width(316f).pad(92f, 0f, 0f, 20f);
+        overlay.add(unlockPanel).width(316f).pad(168f, 0f, 0f, 20f);
         stage.addActor(overlay);
     }
 
@@ -314,7 +321,7 @@ public class GridPrototypeScreen extends BaseScreen {
         Table overlay = new Table(skin);
         overlay.setFillParent(true);
         overlay.top();
-        overlay.add(seasonBar).padTop(84f);
+        overlay.add(seasonBar).padTop(170f);
         stage.addActor(overlay);
     }
 
@@ -445,12 +452,7 @@ public class GridPrototypeScreen extends BaseScreen {
     }
 
     private void starBounce() {
-        statusLabel.clearActions();
-        statusLabel.setOrigin(Align.center);
-        statusLabel.setScale(1f);
-        statusLabel.addAction(Actions.sequence(
-            Actions.scaleTo(1.3f, 1.3f, 0.1f, Interpolation.swingOut),
-            Actions.scaleTo(1f, 1f, 0.2f, Interpolation.swingOut)));
+        resourceBar.bounceStars();
     }
 
     private void updateSelectionLabel() {
@@ -461,57 +463,7 @@ public class GridPrototypeScreen extends BaseScreen {
     }
 
     private void updateStatus() {
-        EconomySimulation.CostLedger ledger = economy.getCostLedger();
-        statusLabel.setText(tr("hud.stars") + " " + progress.getTotalStars()
-            + "   •   " + tr("hud.buildings") + " " + countBuildings()
-            + "   •   " + tr("econ.money") + " " + (int) economy.getMoney()
-            + "   •   " + tr("econ.population") + " " + (int) economy.getPopulation()
-            + "   •   " + tr("econ.workers") + " " + (int) economy.getEmployedWorkers()
-                + "/" + (int) economy.getWorkingPopulation()
-            + "   •   " + tr("econ.wage") + " " + String.format("%.2f", economy.getAverageWage())
-            + "\n" + tr("econ.revenue") + " " + cost(ledger.revenue)
-            + "   •   " + tr("econ.wages") + " -" + cost(ledger.wages)
-            + "   •   " + tr("econ.energy") + " -" + cost(ledger.energy)
-            + "   •   " + tr("econ.materials") + " -" + cost(ledger.materials)
-            + "   •   " + tr("econ.maintenance") + " -" + cost(ledger.maintenance)
-            + "   •   " + tr("econ.transport") + " -" + cost(ledger.transport)
-            + "   •   " + tr("econ.hauling") + " -" + cost(ledger.hauling)
-            + "   •   " + tr("econ.net") + " " + cost(ledger.net)
-            + "\n" + tr("hud.market") + " "
-            + marketEntry(economy.getMarketInfo(Resource.WOOD))
-            + "   •   " + marketEntry(economy.getMarketInfo(Resource.TOOLS))
-            + "   •   " + marketEntry(economy.getMarketInfo(Resource.FURNITURE))
-            + "\n" + tr("hud.logistics") + " " + tr("hud.logistics.trucks") + " " + economy.getTruckCount()
-            + "   •   " + tr("hud.logistics.routes") + " " + economy.getActiveRouteCount()
-            + "   •   " + tr("hud.logistics.transit") + " " + cost(economy.getTotalInTransit()));
-    }
-
-    /** One good's market state: price→target (demand/supply) and what sold. */
-    private String marketEntry(EconomySimulation.MarketInfo market) {
-        return tr(market.resource.getNameKey()) + " "
-            + String.format("%.2f", market.price)
-            + "→" + String.format("%.2f", market.targetPrice)
-            + " (" + tr("hud.market.demand") + String.format("%.2f", market.demand)
-            + "/" + tr("hud.market.supply") + String.format("%.2f", market.supply) + ")"
-            + " " + tr("hud.market.sold") + String.format("%.2f", market.salesVolume);
-    }
-
-    private static String cost(float value) {
-        return String.format("%.1f", value);
-    }
-
-    private int countBuildings() {
-        int count = 0;
-        for (int col = 0; col < GRID_COLS; col++) {
-            for (int row = 0; row < GRID_ROWS; row++) {
-                VillageGrid.GridOccupant occupant = grid.getOccupant(col, row);
-                if (occupant instanceof BuildingObject) {
-                    BuildingObject obj = (BuildingObject) occupant;
-                    if (obj.getOriginCol() == col && obj.getOriginRow() == row) count++;
-                }
-            }
-        }
-        return count;
+        resourceBar.refresh();
     }
 
     private void saveGame() {
@@ -604,6 +556,7 @@ public class GridPrototypeScreen extends BaseScreen {
 
         shapeRenderer.setProjectionMatrix(worldCamera.combined);
         drawGridLines();
+        drawGridFrame();
         drawHoverHighlight();
 
         ambientEffect.update(delta);
@@ -629,6 +582,26 @@ public class GridPrototypeScreen extends BaseScreen {
             float y = row * CELL_SIZE;
             shapeRenderer.line(0, y, GRID_COLS * CELL_SIZE, y);
         }
+        shapeRenderer.end();
+    }
+
+    /** Dark frame around the play field so the map reads as a clean, distinct surface. */
+    private void drawGridFrame() {
+        float w = GRID_COLS * CELL_SIZE;
+        float h = GRID_ROWS * CELL_SIZE;
+        float thickness = 7f;
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(new Color(0.05f, 0.05f, 0.09f, 0.92f));
+        shapeRenderer.rect(-thickness, -thickness, w + 2f * thickness, thickness);
+        shapeRenderer.rect(-thickness, h, w + 2f * thickness, thickness);
+        shapeRenderer.rect(-thickness, 0f, thickness, h);
+        shapeRenderer.rect(w, 0f, thickness, h);
+        shapeRenderer.setColor(new Color(0.90f, 0.90f, 1f, 0.22f));
+        shapeRenderer.rect(-2f, -2f, w + 4f, 2f);
+        shapeRenderer.rect(-2f, h, w + 4f, 2f);
+        shapeRenderer.rect(-2f, 0f, 2f, h);
+        shapeRenderer.rect(w, 0f, 2f, h);
         shapeRenderer.end();
     }
 
